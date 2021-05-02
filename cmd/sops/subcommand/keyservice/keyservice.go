@@ -21,9 +21,10 @@ func init() {
 
 // Opts are the options the key service server can take
 type Opts struct {
-	Network string
-	Address string
-	Prompt  bool
+	Network    string
+	Address    string
+	Prompt     bool
+	Kubernetes bool
 }
 
 // Run runs a SOPS key service server

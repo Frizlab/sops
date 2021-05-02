@@ -331,6 +331,10 @@ func main() {
 					Value: "127.0.0.1:5000",
 				},
 				cli.BoolFlag{
+					Name:  "kubernetes",
+					Usage: "Use Kubernetes grpc format for the server",
+				},
+				cli.BoolFlag{
 					Name:  "prompt",
 					Usage: "Prompt user to confirm every incoming request",
 				},
@@ -344,9 +348,10 @@ func main() {
 					logging.SetLevel(logrus.DebugLevel)
 				}
 				err := keyservicecmd.Run(keyservicecmd.Opts{
-					Network: c.String("network"),
-					Address: c.String("address"),
-					Prompt:  c.Bool("prompt"),
+					Network:    c.String("network"),
+					Address:    c.String("address"),
+					Prompt:     c.Bool("prompt"),
+					Kubernetes: c.Bool("kubernetes"),
 				})
 				if err != nil {
 					log.Errorf("Error running keyservice: %s", err)
