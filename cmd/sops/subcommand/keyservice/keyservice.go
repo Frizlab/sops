@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
-	"k8s.io/apiserver/pkg/storage/value/encrypt/envelope/v1beta1"
+	k8skmsapi "k8s.io/apiserver/pkg/storage/value/encrypt/envelope/v1beta1"
 )
 
 var log *logrus.Logger
@@ -42,7 +42,7 @@ func Run(opts Opts) error {
 			Prompt: opts.Prompt,
 		})
 	} else {
-		v1beta1.RegisterKeyManagementServiceServer(grpcServer, keyservice.K8sServer{})
+		k8skmsapi.RegisterKeyManagementServiceServer(grpcServer, keyservice.K8sServer{})
 	}
 	log.Infof("Listening on %s://%s", opts.Network, opts.Address)
 
