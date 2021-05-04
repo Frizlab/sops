@@ -11,6 +11,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+
+	_ "k8s.io/apiserver/pkg/storage/value/encrypt/envelope"
 )
 
 var log *logrus.Logger
