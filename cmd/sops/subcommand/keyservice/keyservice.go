@@ -44,7 +44,7 @@ func Run(opts Opts) error {
 
 	// Close socket if we get killed
 	sigc := make(chan os.Signal, 1)
-	signal.Notify(sigc, os.Interrupt, os.Kill, syscall.SIGTERM)
+	signal.Notify(sigc, os.Interrupt, syscall.SIGTERM)
 	go func(c chan os.Signal) {
 		sig := <-c
 		log.Infof("Caught signal %s: shutting down.", sig)
