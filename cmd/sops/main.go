@@ -336,7 +336,7 @@ func main() {
 				},
 				cli.BoolFlag{
 					Name:  "prompt",
-					Usage: "Prompt user to confirm every incoming request",
+					Usage: "Prompt user to confirm every incoming request (ignored for Kubernetes server)",
 				},
 				cli.BoolFlag{
 					Name:  "verbose",
