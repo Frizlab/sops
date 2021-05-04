@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
-	_ "k8s.io/apiserver/pkg/storage/value/encrypt/envelope"
+	"k8s.io/apiserver/pkg/storage/value/encrypt/envelope/v1beta1"
 )
 
 var log *logrus.Logger
@@ -37,9 +37,13 @@ func Run(opts Opts) error {
 	}
 	defer lis.Close()
 	grpcServer := grpc.NewServer()
-	keyservice.RegisterKeyServiceServer(grpcServer, keyservice.Server{
-		Prompt: opts.Prompt,
-	})
+	if !opts.Kubernetes {
+		keyservice.RegisterKeyServiceServer(grpcServer, keyservice.Server{
+			Prompt: opts.Prompt,
+		})
+	} else {
+		v1beta1.RegisterKeyManagementServiceServer(grpcServer, keyservice.K8sServer{})
+	}
 	log.Infof("Listening on %s://%s", opts.Network, opts.Address)
 
 	// Close socket if we get killed
