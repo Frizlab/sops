@@ -42,7 +42,9 @@ func Run(opts Opts) error {
 			Prompt: opts.Prompt,
 		})
 	} else {
-		k8skmsapi.RegisterKeyManagementServiceServer(grpcServer, keyservice.K8sServer{})
+		k8skmsapi.RegisterKeyManagementServiceServer(grpcServer, keyservice.K8sServer{
+			Log: log,
+		})
 	}
 	log.Infof("Listening on %s://%s", opts.Network, opts.Address)
 
