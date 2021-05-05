@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	"go.mozilla.org/sops/v3/keyservice"
+	"go.mozilla.org/sops/v3/keyservice_k8s"
 	"go.mozilla.org/sops/v3/logging"
 
 	"github.com/sirupsen/logrus"
@@ -42,7 +43,7 @@ func Run(opts Opts) error {
 			Prompt: opts.Prompt,
 		})
 	} else {
-		k8skmsapi.RegisterKeyManagementServiceServer(grpcServer, keyservice.K8sServer{
+		k8skmsapi.RegisterKeyManagementServiceServer(grpcServer, keyservice_k8s.K8sServer{
 			Log: log,
 		})
 	}
