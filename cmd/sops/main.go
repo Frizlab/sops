@@ -24,6 +24,7 @@ import (
 	"go.mozilla.org/sops/v3/cmd/sops/subcommand/exec"
 	"go.mozilla.org/sops/v3/cmd/sops/subcommand/groups"
 	keyservicecmd "go.mozilla.org/sops/v3/cmd/sops/subcommand/keyservice"
+	keyservicek8scmd "go.mozilla.org/sops/v3/cmd/sops/subcommand/keyservice_k8s"
 	publishcmd "go.mozilla.org/sops/v3/cmd/sops/subcommand/publish"
 	"go.mozilla.org/sops/v3/cmd/sops/subcommand/updatekeys"
 	"go.mozilla.org/sops/v3/config"
@@ -331,10 +332,6 @@ func main() {
 					Value: "127.0.0.1:5000",
 				},
 				cli.BoolFlag{
-					Name:  "kubernetes",
-					Usage: "Use Kubernetes grpc format for the server",
-				},
-				cli.BoolFlag{
 					Name:  "prompt",
 					Usage: "Prompt user to confirm every incoming request (ignored for Kubernetes server)",
 				},
@@ -348,10 +345,53 @@ func main() {
 					logging.SetLevel(logrus.DebugLevel)
 				}
 				err := keyservicecmd.Run(keyservicecmd.Opts{
-					Network:    c.String("network"),
-					Address:    c.String("address"),
-					Prompt:     c.Bool("prompt"),
-					Kubernetes: c.Bool("kubernetes"),
+					Network: c.String("network"),
+					Address: c.String("address"),
+					Prompt:  c.Bool("prompt"),
+				})
+				if err != nil {
+					log.Errorf("Error running keyservice: %s", err)
+					return err
+				}
+				return nil
+			},
+		},
+		{
+			Name:  "keyservice-k8s",
+			Usage: "start a Kubernetes key service server",
+			Flags: append([]cli.Flag{
+				cli.StringFlag{
+					Name:  "path",
+					Usage: "path to listen on, e.g. '/tmp/sops.sock'",
+					Value: "/tmp/sops.sock",
+				},
+				cli.StringFlag{
+					Name:  "config",
+					Usage: "path to sops' config file.",
+				},
+				cli.BoolFlag{
+					Name:  "verbose",
+					Usage: "Enable verbose logging output",
+				},
+			}, keyserviceFlags...),
+			Action: func(c *cli.Context) error {
+				if c.Bool("verbose") || c.GlobalBool("verbose") {
+					logging.SetLevel(logrus.DebugLevel)
+				}
+				if !c.IsSet("config") {
+					err := c.Set("config", c.GlobalString("config"))
+					if err != nil {
+						return toExitError(err)
+					}
+				}
+				groups, err := keyGroups(c, "")
+				if err != nil {
+					return toExitError(err)
+				}
+				err = keyservicek8scmd.Run(keyservicek8scmd.Opts{
+					Path:        c.String("path"),
+					KeyGroups:   groups,
+					KeyServices: keyservices(c),
 				})
 				if err != nil {
 					log.Errorf("Error running keyservice: %s", err)

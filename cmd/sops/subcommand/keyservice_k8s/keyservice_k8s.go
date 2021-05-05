@@ -1,4 +1,4 @@
-package keyservice
+package keyservice_k8s
 
 import (
 	"net"
@@ -6,38 +6,44 @@ import (
 	"os/signal"
 	"syscall"
 
+	"go.mozilla.org/sops/v3"
 	"go.mozilla.org/sops/v3/keyservice"
+	"go.mozilla.org/sops/v3/keyservice_k8s"
 	"go.mozilla.org/sops/v3/logging"
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+
+	k8skmsapi "k8s.io/apiserver/pkg/storage/value/encrypt/envelope/v1beta1"
 )
 
 var log *logrus.Logger
 
 func init() {
-	log = logging.NewLogger("KEYSERVICE")
+	log = logging.NewLogger("KEYSERVICE-K8S")
 }
 
 // Opts are the options the key service server can take
 type Opts struct {
-	Network string
-	Address string
-	Prompt  bool
+	Path        string
+	KeyGroups   []sops.KeyGroup
+	KeyServices []keyservice.KeyServiceClient
 }
 
 // Run runs a SOPS key service server
 func Run(opts Opts) error {
-	lis, err := net.Listen(opts.Network, opts.Address)
+	lis, err := net.Listen("unix" /* Only network supported by k8s for now */, opts.Path)
 	if err != nil {
 		return err
 	}
 	defer lis.Close()
 	grpcServer := grpc.NewServer()
-	keyservice.RegisterKeyServiceServer(grpcServer, keyservice.Server{
-		Prompt: opts.Prompt,
+	k8skmsapi.RegisterKeyManagementServiceServer(grpcServer, keyservice_k8s.K8sServer{
+		Log:         log,
+		KeyGroups:   opts.KeyGroups,
+		KeyServices: opts.KeyServices,
 	})
-	log.Infof("Listening on %s://%s", opts.Network, opts.Address)
+	log.Infof("Listening on unix://%s", opts.Path)
 
 	// Close socket if we get killed
 	sigc := make(chan os.Signal, 1)
